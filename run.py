@@ -7,6 +7,7 @@ from bids.grabbids import BIDSLayout
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
 
+
 def run(command, env={}):
     merged_env = os.environ
     merged_env.update(env)
@@ -21,6 +22,7 @@ def run(command, env={}):
             break
     if process.returncode != 0:
         raise Exception("Non zero return code: %d"%process.returncode)
+
 
 stages_dict = {"brain_extraction": "1",
                "template_registration": "2",
@@ -51,7 +53,7 @@ parser.add_argument('--n_cpus', help='Number of CPUs/cores available to use.',
 parser.add_argument('--stage', help='Which stage of ACT to run',
                     choices=stages_dict.keys())
 parser.add_argument('-v', '--version', action='version',
-                    version='BIDS-App example version {}'.format(__version__))
+                    version='ANTs Cortical Thickness BIDS-App version {}'.format(__version__))
 
 
 args = parser.parse_args()
@@ -89,7 +91,9 @@ if args.analysis_level == "participant":
         T1w_files = layout.get(subject=subject_label, type='T1w',
                                extensions=['.nii','.nii.gz'],
                                return_type='file')
-        if len(T1w_files) == 1:
+        if len(T1w_files) == 0:
+            raise Exception("No T1w files found for participant %s"%subject_label)
+        elif len(T1w_files) == 1:
             params = {"out_prefix": os.path.join(args.output_dir,
                                                  "sub-" + str(subject_label),
                                                  os.path.split(T1w_files[0])[-1].split('.')[0] + "_"),
@@ -110,3 +114,26 @@ if args.analysis_level == "participant":
 
             print(cmd)
             run(cmd, env={'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS': str(args.n_cpus)})
+        else:
+            params = {"out_prefix": os.path.join(args.output_dir,
+                                                 "sub-" + str(subject_label),
+                                                 "sub-" + str(subject_label) + "_T1w_"),
+                      "t1ws": " ".join(T1w_files),
+                      "n_cpus": str(args.n_cpus)}
+            params.update(template_dict)
+            cmd = "antsLongitudinalCorticalThickness.sh " \
+                  "-d 3 " \
+                  "-k 1 " \
+                  "-o {out_prefix} " \
+                  "-e {template_full} " \
+                  "-t {template_skullstripped} " \
+                  "-m {probability_mask} " \
+                  "-f {registration_mask} " \
+                  "-p {priors} " \
+                  "-j {n_cpus} " \
+                  "{t1ws}".format(**params)
+
+            print(cmd)
+            run(cmd,
+                env={'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS': str(args.n_cpus)})
+
