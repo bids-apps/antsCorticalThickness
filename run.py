@@ -27,7 +27,7 @@ def run(command, env={}):
 stages_dict = {"brain_extraction": "1",
                "template_registration": "2",
                "tissue_segmentation": "3",
-               "template_registration": "4",
+               "template_registration_improved": "4",
                "cortical_thickness": "5",
                "qc": "6"}
 
