@@ -21,6 +21,7 @@ RUN pip3 install https://github.com/INCF/pybids/archive/800d15053952991c9cd4a00c
 RUN npm install -g bids-validator
 
 COPY run.py /opt/run.py
+RUN chmod a+x /opt/run.py
 
 COPY version /opt/version
 
