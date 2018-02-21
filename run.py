@@ -14,12 +14,14 @@ def run(command, env={}):
     process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, shell=True,
                                env=merged_env)
+
     while True:
         line = process.stdout.readline()
         line = str(line, 'utf-8')[:-1]
         print(line)
         if line == '' and process.poll() != None:
             break
+
     if process.returncode != 0:
         raise Exception("Non zero return code: %d"%process.returncode)
 
@@ -34,6 +36,7 @@ stages_dict = {"brain_extraction": "1",
 parser = argparse.ArgumentParser(description='Cortical thickness estimation using ANTs.')
 parser.add_argument('bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
+parser.add_argument('bids_config', help='A bids-validator configuration file.', default=None)
 parser.add_argument('output_dir', help='The directory where the output files '
                     'should be stored. If you are running group level analysis '
                     'this folder should be prepopulated with the results of the'
@@ -58,7 +61,14 @@ parser.add_argument('-v', '--version', action='version',
 
 args = parser.parse_args()
 
-run('bids-validator %s'%args.bids_dir)
+if args.bids_config is not None:
+    _bids_config = '-c {0}'.format(args.bids_config)
+else:
+    _bids_config = ' ' 
+
+run('bids-validator {0} {1}'.format(args.bids_dir, _bids_config))
+
+
 
 layout = BIDSLayout(args.bids_dir)
 
