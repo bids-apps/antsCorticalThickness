@@ -1,4 +1,5 @@
 ## BIDS App for calculating cortical thickness using ANTs
+
 This BIDS App runs ANTs cortical thickness estimation pipeline.
 
 For more information about the specification of BIDS Apps see [here](https://docs.google.com/document/d/1E1Wi5ONvOVVnGhj21S1bmJJ4kyHFT7tkxnV3C23sjIE/edit#).
