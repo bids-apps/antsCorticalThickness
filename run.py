@@ -136,4 +136,3 @@ if args.analysis_level == "participant":
             print(cmd)
             run(cmd,
                 env={'ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS': str(args.n_cpus)})
-

@@ -5,7 +5,7 @@ This BIDS App runs ANTs cortical thickness estimation pipeline.
 For more information about the specification of BIDS Apps see [here](https://docs.google.com/document/d/1E1Wi5ONvOVVnGhj21S1bmJJ4kyHFT7tkxnV3C23sjIE/edit#).
 
 ### Description
-The app finds all T1w files for each subject and runs antsCorticalThickness.sh (if there is only one T1w file per subject) or 
+The app finds all T1w files for each subject and runs antsCorticalThickness.sh (if there is only one T1w file per subject) or
 antsLongitudinalCorticalThickness.sh (if there are more than one T1w files).
 
 ### Documentation

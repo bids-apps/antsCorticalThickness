@@ -13,7 +13,7 @@ RUN apt-get update && \
     apt-get remove -y curl && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-	
+
 RUN wget https://ndownloader.figshare.com/files/3133832 -O oasis.zip && unzip oasis.zip -d /opt && rm -rf oasis.zip
 
 RUN pip3 install https://github.com/INCF/pybids/archive/800d15053952991c9cd4a00cf0039288d489ca12.zip
