@@ -2,7 +2,7 @@
 import argparse
 import os
 import subprocess
-from bids.grabbids import BIDSLayout
+from bids import BIDSLayout
 
 __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'version')).read()
@@ -89,7 +89,7 @@ if args.analysis_level == "participant":
     # find all T1s and skullstrip them
     for subject_label in subjects_to_analyze:
         T1w_files = layout.get(subject=subject_label, type='T1w',
-                               extensions=['.nii','.nii.gz'],
+                               extensions=['nii','nii.gz'],
                                return_type='file')
         if len(T1w_files) == 0:
             raise Exception("No T1w files found for participant %s"%subject_label)

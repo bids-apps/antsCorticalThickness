@@ -1,24 +1,26 @@
-FROM neurodebian:zesty-non-free
+FROM bids/base_validator
+
+ENV ANTSPATH="/opt/ants-2.3.4/" \
+    PATH="/opt/ants-2.3.4:$PATH"
+
+RUN apt-get update -qq \
+    && apt-get install -y -q --no-install-recommends \
+           ca-certificates \
+           curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "Downloading ANTs ..." \
+    && mkdir -p /opt/ants-2.3.4 \
+    && curl -fsSL https://dl.dropbox.com/s/gwf51ykkk5bifyj/ants-Linux-centos6_x86_64-v2.3.4.tar.gz \
+    | tar -xz -C /opt/ants-2.3.4 --strip-components 1
+
 
 RUN apt-get update && \
-    apt-get install -y ants=2.2.0-1~nd17.04+1 python3 python3-pip wget unzip && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-ENV ANTSPATH=/usr/lib/ants/
-ENV PATH=$ANTSPATH:$PATH
-
-## Install the validator
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-    apt-get remove -y curl && \
-    apt-get install -y nodejs && \
+    apt-get install -y python3 python3-pip wget unzip && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget https://ndownloader.figshare.com/files/3133832 -O oasis.zip && unzip oasis.zip -d /opt && rm -rf oasis.zip
 
-RUN pip3 install https://github.com/INCF/pybids/archive/800d15053952991c9cd4a00cf0039288d489ca12.zip
-
-RUN npm install -g bids-validator
+RUN pip3 install pybids
 
 COPY run.py /opt/run.py
 RUN chmod a+x /opt/run.py
