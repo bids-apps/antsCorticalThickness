@@ -40,9 +40,10 @@ jobs:
         - ~/data
 
     - persist_to_workspace:
-        root: ~/docker
+        root: /home/circleci
         paths:
-        - image.tar
+        - data/ds114_test1
+        - docker/image.tar
 
   test:
     machine:
