@@ -1,5 +1,5 @@
 ---
-version: 2
+version: 2.1
 
 jobs:
   build:
@@ -49,6 +49,10 @@ jobs:
     machine:
       image: ubuntu-2204:2022.10.2
 
+    parameters:
+      participant:
+        type: string
+
     steps:
     - attach_workspace:
         at: /tmp/workspace
@@ -62,28 +66,14 @@ jobs:
           docker run -ti --rm --read-only bids/${CIRCLE_PROJECT_REPONAME,,} --version
 
     - run:
-        name: participant level tests for single session dataset
+        name: participant << parameters.participant >> for level tests for single session dataset
         command: |
           docker run -ti --rm --read-only \
-            -v /tmp:/tmp \
-            -v /var/tmp:/var/tmp \
             -v /tmp/workspace/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset /outputs participant \
-                --participant_label 01 \
-                --stage brain_extraction
-        no_output_timeout: 6h
-    - run:
-        command: |
-          docker run -ti --rm --read-only \
-            -v /tmp:/tmp \
-            -v /var/tmp:/var/tmp \
-            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant \
-                --participant_label 02 \
+                --participant_label << parameters.participant >> \
                 --stage brain_extraction
         no_output_timeout: 6h
 
@@ -100,20 +90,23 @@ jobs:
         name: push to dockerhub
         command: |
           docker login --username ${DOCKER_USER} --password ${DOCKER_PASS}
-          docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
+          docker push bids/${CIRCLE_PROJECT_REPONAME,,}:unstable
           if [[ -n "${CIRCLE_TAG}" ]]; then
+            docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
             docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
             docker push bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
           fi
 
 workflows:
-  version: 2
   build-test-deploy:
     jobs:
     - build
     - test:
         requires:
         - build
+        matrix:
+          parameters:
+            participant: ['01', '02']
     - deploy:
         requires:
         - test
