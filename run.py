@@ -88,7 +88,7 @@ if args.analysis_level == "participant":
 
     # find all T1s and skullstrip them
     for subject_label in subjects_to_analyze:
-        T1w_files = layout.get(subject=subject_label, type='T1w',
+        T1w_files = layout.get(subject=subject_label, suffix='T1w',
                                extension=['nii','nii.gz'],
                                return_type='file')
         if len(T1w_files) == 0:
