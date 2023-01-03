@@ -53,14 +53,13 @@ jobs:
     - attach_workspace:
         at: /tmp/workspace
     - run: docker load -i /tmp/workspace/image.tar
-    - setup_remote_docker
+
     - run: mkdir -p ${HOME}/outputs
 
     - run:
         name: print version
         command: |
           docker run -ti --rm --read-only bids/${CIRCLE_PROJECT_REPONAME,,} --version
-
 
     - run:
         name: participant level tests for single session dataset
@@ -88,7 +87,6 @@ jobs:
                 --stage brain_extraction
         no_output_timeout: 6h
 
-
   deployment:
     docker:
     - image: ubuntu-2204:2022.10.2
@@ -97,7 +95,7 @@ jobs:
     - attach_workspace:
         at: /tmp/workspace
     - run: docker load -i /tmp/workspace/image.tar
-    - setup_remote_docker
+
     - run:
         command: |
           if [[ -n "$DOCKER_PASS" ]]; then
@@ -130,5 +128,4 @@ workflows:
             ignore: /.*/
           tags:
             only: /.*/
-
 # VS Code Extension Version: 1.5.1
