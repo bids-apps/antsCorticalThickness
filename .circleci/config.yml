@@ -4,7 +4,6 @@ version: 2
 jobs:
   build:
     machine:
-      # https://circleci.com/developer/machine/image/ubuntu-2204
       image: ubuntu-2204:2022.10.2
 
     steps:
@@ -16,23 +15,23 @@ jobs:
     - run: mkdir -p ${HOME}/data
 
     - run:
-        name: get ds114_test1
+        name: 'Get test data: ds114_test1'
         command: |
           if [[ ! -d ~/data/ds114_test1 ]]; then
-            wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && \
+            wget -c -O ${HOME}/ds114_test1.tar "https://osf.io/download/zerfq/" && \
+            mkdir -p ${HOME}/data && \
             tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data;
           fi
     - run:
+        name: Build Docker image
         command: |
-          if [[ -e ~/docker/image.tar ]]; then
-            docker load -i ~/docker/image.tar;
+          if [[ -e ~/docker/image.tar ]]; \
+            then docker load -i ~/docker/image.tar;
           fi
-    - run: git describe --tags --always > version
-    - run:
-        name: build image
-        command: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
-        no_output_timeout: 6h
-    - run: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+          git describe --tags --always > version
+          docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
+          mkdir -p ${HOME}/docker
+          docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
 
     - save_cache:
         key: my_cache
@@ -46,8 +45,8 @@ jobs:
         - image.tar
 
   test:
-    docker:
-    - image: ubuntu-2204:2022.10.2
+    machine:
+      image: ubuntu-2204:2022.10.2
 
     steps:
     - attach_workspace:
@@ -68,7 +67,7 @@ jobs:
             -v /tmp:/tmp \
             -v /var/tmp:/var/tmp \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
+            -v ${HOME}/outputs:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset /outputs participant \
                 --participant_label 01 \
@@ -80,37 +79,31 @@ jobs:
             -v /tmp:/tmp \
             -v /var/tmp:/var/tmp \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
+            -v ${HOME}/outputs:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset /outputs participant \
                 --participant_label 02 \
                 --stage brain_extraction
         no_output_timeout: 6h
 
-  deployment:
-    docker:
-    - image: ubuntu-2204:2022.10.2
+  deploy:
+    machine:
+      image: ubuntu-2204:2022.10.2
 
     steps:
     - attach_workspace:
         at: /tmp/workspace
-    - run: docker load -i /tmp/workspace/image.tar
 
+    - run: docker load -i /tmp/workspace/docker/image.tar
     - run:
+        name: push to dockerhub
         command: |
-          if [[ -n "$DOCKER_PASS" ]]; then
-            docker login -u $DOCKER_USER -p $DOCKER_PASS && \
-            docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest;
+          docker login --username ${DOCKER_USER} --password ${DOCKER_PASS}
+          docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
+          if [[ -n "${CIRCLE_TAG}" ]]; then
+            docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
+            docker push bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
           fi
-        no_output_timeout: 6h
-    - run:
-        command: |
-          if [[ -n "$DOCKER_PASS" ]]; then
-            docker login -u $DOCKER_USER -p $DOCKER_PASS && \
-            docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG && \
-            docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG;
-          fi
-        no_output_timeout: 6h
 
 workflows:
   version: 2
@@ -120,12 +113,11 @@ workflows:
     - test:
         requires:
         - build
-    - deployment:
+    - deploy:
         requires:
-        - build
+        - test
         filters:
-          branches:
-            ignore: /.*/
           tags:
             only: /.*/
+
 # VS Code Extension Version: 1.5.1
