@@ -67,7 +67,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v /tmp:/tmp \
             -v /var/tmp:/var/tmp \
-            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset /outputs participant \
@@ -79,7 +79,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v /tmp:/tmp \
             -v /var/tmp:/var/tmp \
-            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset /outputs participant \
