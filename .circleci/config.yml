@@ -15,7 +15,7 @@ jobs:
           name: Get test data
           command: |
             wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/utils/get_data_from_osf.sh
-            bash get_ds114_test1.sh
+            bash get_data_from_osf.sh ds114_test1
       - run:
           name: Build Docker image
           command: |
