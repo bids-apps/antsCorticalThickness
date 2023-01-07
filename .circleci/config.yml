@@ -83,6 +83,8 @@ workflows:
           parameters:
             participant: ['01', '02']
     - deploy:
+        context:
+        - dockerhub
         requires:
         - test
         filters:
